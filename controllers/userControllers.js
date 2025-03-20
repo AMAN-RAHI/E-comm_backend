@@ -149,7 +149,7 @@ export const updateUserProfile = async (req, res) => {
     console.log("🔹 Cloudinary Config (Only in Update Route):", {
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET ? "Loaded ✅" : "Missing ❌",
+      api_secret: process.env.CLOUDINARY_API_SECRET ? "Loaded" : "Missing",
     });
 
     const user = await Usermodel.findById(req.user.id);
@@ -158,11 +158,11 @@ export const updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // ✅ Update basic fields
+    // Update basic fields
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
 
-    // ✅ Handle avatar upload
+    // Handle avatar upload
     if (req.body.avatar) {
       try {
         console.log("📤 Attempting to upload avatar...");
@@ -183,24 +183,24 @@ export const updateUserProfile = async (req, res) => {
           signature,
         });
 
-        console.log("✅ Avatar uploaded successfully:", uploadedResponse.secure_url);
+        console.log("Avatar uploaded successfully:", uploadedResponse.secure_url);
         user.avatar = uploadedResponse.secure_url;
       } catch (uploadError) {
-        console.error("❌ Cloudinary Upload Error:", uploadError);
+        console.error(" Cloudinary Upload Error:", uploadError);
         return res.status(400).json({ message: "Cloudinary upload failed", error: uploadError });
       }
     }
 
-    // ✅ Update password if provided
+    // Update password if provided
     if (req.body.password && req.body.password.trim() !== "") {
       user.password = req.body.password; // Ensure the model hashes it
     }
 
-    // ✅ Save updated user
+    // Save updated user
     const updatedUser = await user.save();
-    console.log("✅ User profile updated successfully");
+    console.log(" User profile updated successfully");
 
-    // ✅ Send response
+    // Send response
     res.json({
       _id: updatedUser.id,
       name: updatedUser.name,
@@ -210,7 +210,7 @@ export const updateUserProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Update Profile Error:", error);
+    console.error("Update Profile Error:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };

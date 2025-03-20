@@ -13,7 +13,7 @@ export const protect = async (req, res, next) => {
     }
 
     const token = req.headers.authorization.split(" ")[1]?.trim(); // Extract and trim token
-    console.log("✅ Extracted Token:", token);
+    console.log("Extracted Token:", token);
 
     if (!token) {
       return res.status(401).json({ message: "Unauthorized: Token missing" });
@@ -21,11 +21,11 @@ export const protect = async (req, res, next) => {
 
     // Decode token without verifying to inspect payload
     const decodedRaw = jwt.decode(token);
-    console.log("🔹 Raw Decoded Token:", decodedRaw);
+    console.log("Raw Decoded Token:", decodedRaw);
 
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("🔹 Verified Token:", decoded);
+    console.log("Verified Token:", decoded);
 
     // Fetch the user from DB
     req.user = await Usermodel.findById(decoded.id).select("-password");
@@ -34,10 +34,10 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
 
-    console.log("✅ User Found:", req.user);
+    console.log("User Found:", req.user);
     next(); // Proceed to next middleware
   } catch (error) {
-    console.error("❌ Authentication Error:", error.message);
+    console.error(" Authentication Error:", error.message);
     return res.status(401).json({ message: "Unauthorized: Invalid or expired token" });
   }
 };
