@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import sendEmail from "../config/sendEmail.js";
 import crypto from "crypto";
+import cloudinary from "../utils/cloudinary.js";
+import generateSignature from "../utils/cloudgensig.js";
 
 dotenv.config();
 
@@ -13,7 +15,7 @@ dotenv.config();
 // Generate JWT Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "100d", 
+    expiresIn: "30d", 
   });
 };
 
@@ -143,33 +145,75 @@ export const getUserProfile = async (req, res) => {
 // access Private
 export const updateUserProfile = async (req, res) => {
   try {
+    console.log("🔹 User ID from Token:", req.user.id);
+    console.log("🔹 Cloudinary Config (Only in Update Route):", {
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET ? "Loaded ✅" : "Missing ❌",
+    });
+
     const user = await Usermodel.findById(req.user.id);
 
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-
-      if (req.body.password) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(req.body.password, salt);
-      }
-
-      const updatedUser = await user.save();
-
-      res.json({
-        _id: updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        token: generateToken(updatedUser.id),
-      });
-    } else {
-      res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    // ✅ Update basic fields
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+
+    // ✅ Handle avatar upload
+    if (req.body.avatar) {
+      try {
+        console.log("📤 Attempting to upload avatar...");
+
+        if (!req.body.avatar.startsWith("data:image")) {
+          return res.status(400).json({ message: "Invalid image format. Use Base64." });
+        }
+
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const params = { timestamp, folder: "avatars" };
+        const signature = generateSignature(params);
+
+        const uploadedResponse = await cloudinary.uploader.upload(req.body.avatar, {
+          folder: "avatars",
+          transformation: [{ width: 500, height: 500, crop: "fill" }],
+          api_key: process.env.CLOUDINARY_API_KEY,
+          timestamp,
+          signature,
+        });
+
+        console.log("✅ Avatar uploaded successfully:", uploadedResponse.secure_url);
+        user.avatar = uploadedResponse.secure_url;
+      } catch (uploadError) {
+        console.error("❌ Cloudinary Upload Error:", uploadError);
+        return res.status(400).json({ message: "Cloudinary upload failed", error: uploadError });
+      }
+    }
+
+    // ✅ Update password if provided
+    if (req.body.password && req.body.password.trim() !== "") {
+      user.password = req.body.password; // Ensure the model hashes it
+    }
+
+    // ✅ Save updated user
+    const updatedUser = await user.save();
+    console.log("✅ User profile updated successfully");
+
+    // ✅ Send response
+    res.json({
+      _id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      avatar: updatedUser.avatar, 
+      token: generateToken(updatedUser.id),
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    console.error("❌ Update Profile Error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
-
 
 
 
