@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import ConnectDb from './config/connectdb.js';
+import categoryRouter from './Routes/categoryRoutes.js';
 
 const app = express();
 
@@ -30,6 +31,8 @@ const PORT = process.env.PORT || 3000;
 
 // // Use user routes
 app.use("/api/users", userRoutes);
+
+app.use("/api/category", categoryRouter);
 
 ConnectDb().then(() => {
   app.listen(PORT, () => {
