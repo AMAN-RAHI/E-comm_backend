@@ -1,6 +1,7 @@
 import CategoryModel from "../Models/categoryModels.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import Usermodel from "../Models/userModels.js";
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -78,4 +79,55 @@ export async function createCategory(req, res) {
       success: false,
     });
   }
+}
+
+
+// create get all category controller
+export async function getallCategory(req,res) {
+try {
+  const categories =await CategoryModel.find()
+
+  //for sub categories
+  const categoryMap={}
+  categories.forEach(cat=>{
+    
+      categoryMap[cat._id]={...cat._doc, children:[]}
+
+    })
+
+    const rootCategories=[]
+  categories.forEach(cat=>{
+    if(cat.parent_id){
+      categoryMap[cat.parent_id].children.push(categoryMap[cat.id])
+
+    }
+    else{
+      rootCategories.push(categoryMap[cat._id])
+    }
+  })
+
+  res.status(200).json({success:true, rootCategories})
+  
+} catch (error) {
+  res.status(500).json({success:false,message:error.message})
+}
+  
+}
+
+// create get by id 
+export async function getCategoryById(req,res) {
+  try {
+    const category= await CategoryModel.findById(req.params.id)
+    if(!category) return res.status(400).json({success:false, message:'Category not found'})
+
+      res.status(200).json({success:true,category})
+    
+  } catch (error) {
+    console.error("Server Error:", error);
+    return res.status(500).json({
+      message: error.message || "Internal Server Error",
+      success: false,
+    });
+  }
+  
 }
