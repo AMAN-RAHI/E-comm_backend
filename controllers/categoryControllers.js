@@ -132,6 +132,7 @@ export async function getCategoryById(req,res) {
   
 }
 
+// update categories
 export async function updateCategory(req,res) {
   try {
     const updatecategory= await CategoryModel.findByIdAndUpdate(
@@ -147,6 +148,32 @@ export async function updateCategory(req,res) {
     
   } catch (error) {
     res.status(500).json({success:false,message:error.message})
+  }
+  
+}
+
+// delete categories route
+export async function deleteCategory(req,res) {
+  try {
+    const category= await CategoryModel.findById(req.params.id)
+
+    if(!category) return res.status(500).json({sucess:false, message:'Category not found'})
+
+      // first check wether the subcategory is present or not 
+      const hassubCategories = await CategoryModel.exists({parent_id : category._id})
+
+      if(hassubCategories ){
+        return res.status(400).json({
+          success:false,
+          message : 'has a subcategory first delete the subcategory then delete roor category'
+        })
+      }
+      await CategoryModel.findByIdAndDelete(req.params.id)
+
+      res.status(200).json({success:true,message:'the Category is deleted successfully'})
+
+  } catch (error) {
+    res.status(500).json({success:false,message: error.message})
   }
   
 }

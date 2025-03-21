@@ -2,7 +2,7 @@ import {Router} from  'express'
 
 import { protect } from "../middleware/authMiddleware.js";
 import upload from  "../middleware/multer.js"
-import {createCategory,getallCategory,getCategoryById,updateCategory} from "../controllers/categoryControllers.js"
+import {createCategory,getallCategory,getCategoryById,updateCategory,deleteCategory} from "../controllers/categoryControllers.js"
 
 
 const categoryRouter= Router()
@@ -18,7 +18,7 @@ categoryRouter.get("/:id", getCategoryById);
 //api/category/update 
 categoryRouter.put("/:id", updateCategory);
 
-// //api/category/delete
-// categoryRouter.delete("/:id", deleteCategory);
+//api/category/delete
+categoryRouter.delete("/:id", deleteCategory);
 
 export default categoryRouter;
