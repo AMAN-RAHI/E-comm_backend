@@ -131,3 +131,22 @@ export async function getCategoryById(req,res) {
   }
   
 }
+
+export async function updateCategory(req,res) {
+  try {
+    const updatecategory= await CategoryModel.findByIdAndUpdate(
+      req.params.id,
+      {$set:req.body},
+      {new:true, runValidators:true}
+
+    );
+
+    if(!updatecategory) return res.status(400).json({sucess:false,message:'Category not found'})
+
+      res.status(200).json({success:true, message:'Updated Categort',category:updatecategory})
+    
+  } catch (error) {
+    res.status(500).json({success:false,message:error.message})
+  }
+  
+}
