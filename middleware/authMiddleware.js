@@ -6,7 +6,7 @@ dotenv.config(); // Ensure environment variables are loaded
 
 export const protect = async (req, res, next) => {
   try {
-    console.log("🔹 Request Headers:", req.headers);
+    console.log("Request Headers:", req.headers);
 
     if (!req.headers.authorization || !req.headers.authorization.startsWith("Bearer")) {
       return res.status(401).json({ message: "Unauthorized: No token provided" });

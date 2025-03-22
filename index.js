@@ -8,6 +8,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import ConnectDb from './config/connectdb.js';
 import categoryRouter from './Routes/categoryRoutes.js';
+import productRoutes from './Routes/productRoutes.js';
 
 const app = express();
 
@@ -32,7 +33,11 @@ const PORT = process.env.PORT || 3000;
 // // Use user routes
 app.use("/api/users", userRoutes);
 
+// category routes 
 app.use("/api/category", categoryRouter);
+
+//products routes
+app.use("/api/product", productRoutes);
 
 ConnectDb().then(() => {
   app.listen(PORT, () => {

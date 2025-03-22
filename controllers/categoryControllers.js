@@ -1,7 +1,7 @@
 import CategoryModel from "../Models/categoryModels.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import Usermodel from "../Models/userModels.js";
+
 
 // Cloudinary Configuration
 cloudinary.config({
