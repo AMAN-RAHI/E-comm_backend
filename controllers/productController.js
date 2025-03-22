@@ -92,3 +92,54 @@ return res.status(200).json({
     }
     
   }
+
+  //get all products
+  export async function getallProducts(req,res) {
+    try {
+      const products= await ProductModel.find()
+
+      if(products.length ===0) return res.status(404).json({
+        success:false,
+        message:'the product is not  found'
+      })
+
+      res.status(200).json({success:true,message:"product is found successfully",products})
+
+      
+    } catch (error) {
+      console.error("Server Error:", error);
+      return res.status(500).json({
+        message: error.message || "Internal Server Error",
+        success: false,
+      });
+    }
+    
+  }
+
+  //get products by id
+   export async function getProductsbyid(req,res) {
+    try {
+      const product = await ProductModel.findById(req.params.id)
+
+      if(!product) return res.status(404).json({
+        success:false,
+        message : 'the product is not found'
+      })
+
+      res.status(200).json({
+        success :true,
+        message:'the product is found successfully',
+        product
+
+      })
+      
+    } catch (error) {
+      console.error("Server Error:", error);
+      return res.status(500).json({
+        message: error.message || "Internal Server Error",
+        success: false,
+      });
+      
+    }
+    
+   }
