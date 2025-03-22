@@ -21,4 +21,5 @@ categoryRouter.put("/:id", updateCategory);
 //api/category/delete
 categoryRouter.delete("/:id", deleteCategory);
 
+
 export default categoryRouter;

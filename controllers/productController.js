@@ -143,3 +143,71 @@ return res.status(200).json({
     }
     
    }
+
+   //update the product
+   export async function updateProducts(req,res) {
+    try {
+      const updateproduct =await ProductModel.findByIdAndUpdate(req.params.id,
+        {$set:req.body},
+        {new:true, runValidators:true}
+      )
+
+      if(!updateproduct) return res.status(404).json({
+        success:false,
+        message :'the product is not found'
+      })
+
+      res.status(200).json({
+        success:true,
+        message:'the product is updated successfully',
+        product:updateproduct
+      })
+      
+    } catch (error) {
+      console.error("Server Error:", error);
+      return res.status(500).json({
+        message: error.message || "Internal Server Error",
+        success: false,
+      });
+    }
+    
+   }
+
+   //delete function for products
+   export async function deleteProduct(req,res) {
+    try {
+      const product = await ProductModel.findById(req.params.id)
+
+      if(!product) return res.status(404).json({
+        success:false,
+        message :'product is not found'
+
+      })
+
+      // lets delete image from cloudinnary as well if present there
+      if (product.images?.length > 0) {
+        const deletePromises = product.images.map((imageUrl) => {
+          const publicId = imageUrl.split("/").pop().split(".")[0];
+          return cloudinary.uploader.destroy(publicId); // ✅ Use cloudinary.uploader.destroy()
+        });
+      
+        await Promise.all(deletePromises); // Deletes all images in parallel
+      }
+      
+
+      //delete the product from mongodb
+      await ProductModel.findByIdAndDelete(req.params.id)
+      res.status(200).json({
+        success:true,
+        message:'the product is deleted successfully'
+      })
+      
+    } catch (error) {
+      console.error("Server Error:", error);
+      return res.status(500).json({
+        message: error.message || "Internal Server Error",
+        success: false,
+      });
+    }
+    
+   }
