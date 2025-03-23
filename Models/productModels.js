@@ -117,7 +117,7 @@ location:[{
 
 },{ timestamps: true }); // Auto-adds createdAt & updatedAt fields
 
-const ProductModel = mongoose.model("Product", productSchema);
+const ProductModel = mongoose.model("product", productSchema);
 export default ProductModel;
 
 

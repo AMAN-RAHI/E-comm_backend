@@ -51,3 +51,92 @@ export const addItemtocart = async (req,res) => {
         })
     }
 }
+
+//get cart items
+export const getcartItems =async (req,res) => 
+    {
+    try {
+        const {userId}= req.params;
+        const cartItems =await cartproductModel.find({
+            userId:userId
+        }).populate('productId')
+
+        if(!cartItems.length) return res.status(404).json({success:false,message:'the item is not found'})
+
+            return res.status(200).json({success:true, cartItems})
+    } catch (error) {
+        console.log('server error', error)
+        return res.status(500).json({
+            message:error.message|| 'Internal server error',
+            success : false
+        })
+    }
+}
+
+//update the cart 
+export const updateCart=async (req,res) => {
+    try {
+        const {cartItemId} =req.params;
+        const {quantity} =req.body;
+
+        if(!quantity || quantity<1){
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a valid quantity"
+            });
+        }
+        const updatedCartItem = await cartproductModel.findByIdAndUpdate(
+            cartItemId,
+            { quantity },
+            { new: true }
+        );
+
+        if (!updatedCartItem) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart item not found"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Cart item updated successfully",
+            cartItem: updatedCartItem
+        });
+    } catch (error) {
+        console.log("Server error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal server error"
+        });
+    }
+}
+
+export const removecartItem = async (req,res) => {
+    try {
+        const { cartItemId, userId } = req.params; // can remove refernce from both user =model and cart model
+
+        const removeItem = await cartproductModel.findByIdAndDelete(cartItemId)
+        if (!removeItem) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart item not found"
+            });
+        }
+
+        // lets also remove from the shopping cart referenced form the user
+        await Usermodel.findByIdAndUpdate(userId, {
+            $pull: { shopping_cart: cartItemId }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Cart item removed successfully"
+        });
+    } catch (error) {
+        console.log("Server error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal server error"
+        });
+    }
+}
