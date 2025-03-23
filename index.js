@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import ConnectDb from './config/connectdb.js';
 import categoryRouter from './Routes/categoryRoutes.js';
 import productRoutes from './Routes/productRoutes.js';
+import cartproductRouter from './Routes/cartRoutes.js'
 
 const app = express();
 
@@ -38,6 +39,9 @@ app.use("/api/category", categoryRouter);
 
 //products routes
 app.use("/api/product", productRoutes);
+
+//cartproduct route
+app.use("/api/cart",cartproductRouter)
 
 ConnectDb().then(() => {
   app.listen(PORT, () => {
