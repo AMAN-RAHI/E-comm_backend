@@ -10,6 +10,7 @@ import ConnectDb from './config/connectdb.js';
 import categoryRouter from './Routes/categoryRoutes.js';
 import productRoutes from './Routes/productRoutes.js';
 import cartproductRouter from './Routes/cartRoutes.js'
+import MyListRouter from './Routes/myListRoutes.js';
 
 const app = express();
 
@@ -41,7 +42,10 @@ app.use("/api/category", categoryRouter);
 app.use("/api/product", productRoutes);
 
 //cartproduct route
-app.use("/api/cart",cartproductRouter)
+app.use("/api/cart",cartproductRouter);
+
+//myList routes
+app.use('/api/myList',MyListRouter)
 
 ConnectDb().then(() => {
   app.listen(PORT, () => {
