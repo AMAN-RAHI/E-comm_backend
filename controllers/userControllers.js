@@ -33,8 +33,11 @@ export const registerUser = async (req, res) => {
     // Check if user already exists
     const userExists = await Usermodel.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ success: false,message: "User already exists" });
     }
+// Generate OTP
+const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
 
     console.log(" Plain Password before save:", password);
 
@@ -43,12 +46,22 @@ export const registerUser = async (req, res) => {
       name,
       email,
       password, 
+      otp,
+      otpExpires
+      
     });
 
+     // Send OTP Email
+     const subject = "Verify Your Email - OTP";
+     const message = `Your OTP for account verification is: ${otp}. It will expire in 10 minutes.`;
+
+     console.log("Sending OTP to:", email);
+     await sendEmail(email, subject, message);
     console.log("User created successfully:", { id: user.id, email: user.email });
 
     if (user) {
       res.status(201).json({
+        success: true,
         _id: user.id,
         name: user.name,
         email: user.email,
@@ -138,6 +151,46 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
+export const verifyEmail = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    // Find user by email
+    const user = await Usermodel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check OTP and expiry
+    if (user.otp !== otp || user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // OTP verified → Activate account & clear OTP
+    user.otp = null;
+    user.otpExpires = null;
+    user.verify_email = true;
+    await user.save();
+
+    // Generate auth token
+    const token = generateToken(user.id);
+
+    res.status(200).json({
+      success:true,
+      message: "OTP verified successfully",
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      verify_email: user.verify_email,
+      token,
+    });
+
+  } catch (error) {
+    console.error("Error in verifyOtp:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 
 
 //  Update user profile
@@ -145,8 +198,8 @@ export const getUserProfile = async (req, res) => {
 // access Private
 export const updateUserProfile = async (req, res) => {
   try {
-    console.log("🔹 User ID from Token:", req.user.id);
-    console.log("🔹 Cloudinary Config (Only in Update Route):", {
+    console.log("User ID from Token:", req.user.id);
+    console.log("Cloudinary Config (Only in Update Route):", {
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET ? "Loaded" : "Missing",
@@ -165,7 +218,7 @@ export const updateUserProfile = async (req, res) => {
     // Handle avatar upload
     if (req.body.avatar) {
       try {
-        console.log("📤 Attempting to upload avatar...");
+        console.log(" Attempting to upload avatar...");
 
         if (!req.body.avatar.startsWith("data:image")) {
           return res.status(400).json({ message: "Invalid image format. Use Base64." });

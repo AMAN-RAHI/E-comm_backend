@@ -58,6 +58,7 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.ObjectId,
       ref:'order'
     }],
+    otp: { type: String },
 
     forget_password_otp:[{
         type:String,
