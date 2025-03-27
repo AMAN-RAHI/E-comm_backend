@@ -12,19 +12,19 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized: No token provided" });
     }
 
-    const token = req.headers.authorization.split(" ")[1]?.trim(); // Extract and trim token
-    console.log("Extracted Token:", token);
+    const accessToken = req.headers.authorization.split(" ")[1]?.trim(); // Extract and trim token
+    console.log("Extracted Token:", accessToken);
 
-    if (!token) {
-      return res.status(401).json({ message: "Unauthorized: Token missing" });
+    if (!accessToken) {
+      return res.status(401).json({ message: "Unauthorized: access Token missing" });
     }
 
     // Decode token without verifying to inspect payload
-    const decodedRaw = jwt.decode(token);
-    console.log("Raw Decoded Token:", decodedRaw);
+    const decodedRaw = jwt.decode(accessToken);
+    console.log("Raw Decoded access Token:", decodedRaw);
 
     // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
     console.log("Verified Token:", decoded);
 
     // Fetch the user from DB
@@ -36,8 +36,16 @@ export const protect = async (req, res, next) => {
 
     console.log("User Found:", req.user);
     next(); // Proceed to next middleware
+
+    
   } catch (error) {
-    console.error(" Authentication Error:", error.message);
+    console.error("Authentication Error:", error.message);
+
+    // If token is expired, prompt client to refresh
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Access token expired. Please refresh your token." });
+    }
+   
     return res.status(401).json({ message: "Unauthorized: Invalid or expired token" });
   }
 };

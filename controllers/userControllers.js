@@ -12,13 +12,20 @@ dotenv.config();
 
 
 
-// Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "30d", 
-  });
+// // Generate JWT Token
+// const generateToken = (id) => {
+//   return jwt.sign({ id }, process.env.JWT_SECRET, {
+//     expiresIn: "30d", 
+//   });
+// };
+
+const generateAccessToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" }); // Short-lived
 };
 
+const generateRefreshToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" }); // Long-lived
+};
 
 
 //  Register new user
@@ -41,6 +48,8 @@ const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 mi
 
     console.log(" Plain Password before save:", password);
 
+    
+
     // Create new user (Mongoose will hash password in pre-save hook)
     const user = await Usermodel.create({
       name,
@@ -50,6 +59,19 @@ const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 mi
       otpExpires
       
     });
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
+    // Send refresh token in HTTP-only cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+    
 
      // Send OTP Email
      const subject = "Verify Your Email - OTP";
@@ -65,7 +87,7 @@ const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 mi
         _id: user.id,
         name: user.name,
         email: user.email,
-        token: generateToken(user.id),
+        accessToken,
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -101,7 +123,17 @@ export const loginUser = async (req, res) => {
       console.warn("User not found for email:", email);
       return res.status(401).json({ message: "Invalid email or password" });
     }
+// Generate tokens
+const accessToken = generateAccessToken(user.id);
+const refreshToken = generateRefreshToken(user.id);
 
+// Store refresh token in HTTP-only cookie
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "Strict",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+});
     console.log(" User found:", { id: user.id, email: user.email });
 
     // Debugging password comparison
@@ -126,7 +158,8 @@ export const loginUser = async (req, res) => {
       _id: user.id,
       name: user.name,
       email: user.email,
-      token: generateToken(user.id),
+      accessToken,
+      refreshToken 
     });
 
   } catch (error) {
@@ -174,8 +207,21 @@ export const verifyEmail = async (req, res) => {
     user.verify_email = true;
     await user.save();
 
-    // Generate auth token
-    const token = generateToken(user.id);
+    // Generate tokens
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
+    // Optionally store refresh token in the database
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // Send refresh token as HTTP-only cookie (recommended)
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
 
     res.status(200).json({
       success:true,
@@ -184,7 +230,7 @@ export const verifyEmail = async (req, res) => {
       name: user.name,
       email: user.email,
       verify_email: user.verify_email,
-      token,
+      accessToken,
     });
 
   } catch (error) {
@@ -329,10 +375,12 @@ export const resetPassword = async (req, res) => {
 };
 
 export const logoutUser = async (req, res) => {
-  try {
-    res.status(200).json({ message: "User logged out successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error" });
-  }
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict",
+  });
+  res.status(200).json({ message: "Logged out successfully" });
 };
+
 

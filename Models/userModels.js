@@ -69,6 +69,8 @@ const userSchema = new mongoose.Schema({
      type:Date,
      default:""
      }],
+     
+     refreshToken: { type: String },
 
      role:[{
         type:String,
