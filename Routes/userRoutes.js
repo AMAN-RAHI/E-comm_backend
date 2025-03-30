@@ -1,6 +1,7 @@
 import express from "express";
 import {
-  registerUser, loginUser, getUserProfile,updateUserProfile,forgotPassword,resetPassword,logoutUser,verifyEmail} 
+  registerUser, loginUser, getUserProfile,updateUserProfile,forgotPassword,resetPassword,logoutUser,
+  verifyEmail,verifyforgotpasswordOtp} 
   from "../controllers/userControllers.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -13,6 +14,7 @@ router.post("/login", loginUser); // Login user
 router.post("/forgot-password", forgotPassword); // Send OTP for Password Reset
 router.post("/reset-password", resetPassword);   // Reset Password using OTP
 router.post("/verify", verifyEmail); // OTP Verification Route
+router.post("/verify-forget-password",verifyforgotpasswordOtp)
 
 
 router.post("/logout", logoutUser); // logout route

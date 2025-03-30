@@ -330,11 +330,17 @@ export const forgotPassword = async (req, res) => {
     user.forget_password_otp = otp;
     user.forget_password_expiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
     await user.save();
+    console.log("Saved User:", user);
+    // this is done before to reduce time taken for uiupdates because of the db processes it takesa
+    // a lot of time , we first update ui then send otp through send mail
+    res.status(200).json({ message: "OTP sent to your email" });
 
     // Send OTP via email
     await sendEmail(user.email, "Password Reset OTP", `Your OTP is ${otp}`);
 
-    res.status(200).json({ message: "OTP sent to your email" });
+   
+
+    
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -373,6 +379,43 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const verifyforgotpasswordOtp =async(req,res)=>{
+  try {
+const {email,otp} = req.body
+
+const user = await Usermodel.findOne({email:email})
+console.log(user)
+
+if(!user){
+  return res.status(400).json({
+    message:"Email is not found",
+    success : false
+  })
+ }
+ console.log("Saved OTP:", user.forget_password_otp);  //Check stored OTP
+ console.log("Stored Expiry:", user.forget_password_expiry, "Current Time:", Date.now()); //Check expiry time
+
+
+ if(String(user.forget_password_otp)!==String(otp) || user.forget_password_expiry<Date.now()){
+  return res.status(400).json({
+    message:"the otp is expired or invalid",
+    success:false
+  })
+ }
+ // OTP is valid → Remove OTP fields
+ user.forget_password_otp = null;
+ user.forget_password_expiry = null;
+ await user.save();
+
+res.status(200).json({
+  success:true,
+  message:'the mail is  verified with the otp'
+})
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+}
 
 export const logoutUser = async (req, res) => {
   res.clearCookie("refreshToken", {
