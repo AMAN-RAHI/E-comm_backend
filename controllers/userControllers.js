@@ -11,14 +11,6 @@ dotenv.config();
 
 
 
-
-// // Generate JWT Token
-// const generateToken = (id) => {
-//   return jwt.sign({ id }, process.env.JWT_SECRET, {
-//     expiresIn: "30d", 
-//   });
-// };
-
 const generateAccessToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" }); // Short-lived
 };
@@ -141,6 +133,7 @@ res.cookie("refreshToken", refreshToken, {
     console.log("Stored Hashed Password:", user.password);
 
     // Compare entered password with stored hash
+    
     const isMatch = await bcrypt.compare(password, user.password);
 
     console.log(" Password Match Result:", isMatch);
@@ -331,6 +324,7 @@ export const forgotPassword = async (req, res) => {
     user.forget_password_expiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
     await user.save();
     console.log("Saved User:", user);
+
     // this is done before to reduce time taken for uiupdates because of the db processes it takesa
     // a lot of time , we first update ui then send otp through send mail
     res.status(200).json({ message: "OTP sent to your email" });
@@ -348,29 +342,21 @@ export const forgotPassword = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { email, otp, newPassword } = req.body;
+    const { email,newpassword } = req.body;
 
     const user = await Usermodel.findOne({ email });
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Check if OTP is valid and not expired
-    if (
-      !user.forget_password_otp ||
-      user.forget_password_expiry < Date.now() ||
-      user.forget_password_otp !== otp
-    ) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-    }
+   
 
-    // Hash the new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    // // Hash the new password
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedPassword = await bcrypt.hash(newpassword, salt);
 
     // Update password and reset OTP fields
-    user.password = hashedPassword;
-    user.forget_password_otp = null;
-    user.forget_password_expiry = null;
+    user.password = newpassword;
+  
 
     await user.save();
 
