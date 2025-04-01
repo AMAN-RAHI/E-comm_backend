@@ -1,10 +1,12 @@
 import express from "express";
 import {
   registerUser, loginUser, getUserProfile,updateUserProfile,forgotPassword,resetPassword,logoutUser,
-  verifyEmail,verifyforgotpasswordOtp} 
+  verifyEmail,verifyforgotpasswordOtp,Uploadavatar} 
   from "../controllers/userControllers.js";
 
 import { protect } from "../middleware/authMiddleware.js";
+import uploadAvatar from "../middleware/avatarMulter.js"
+import { refreshToken } from "../utils/refreshToken.js";
 
 const router = express.Router();
 
@@ -16,6 +18,9 @@ router.post("/reset-password", resetPassword);   // Reset Password using OTP
 router.post("/verify", verifyEmail); // OTP Verification Route
 router.post("/verify-forget-password",verifyforgotpasswordOtp)
 
+router.put("/user-avatar", protect, uploadAvatar.single("avatar"), Uploadavatar);
+
+router.post("/refresh-token", refreshToken); 
 
 router.post("/logout", logoutUser); // logout route
 

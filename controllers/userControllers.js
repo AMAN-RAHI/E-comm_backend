@@ -7,12 +7,14 @@ import crypto from "crypto";
 import cloudinary from "../utils/cloudinary.js";
 import generateSignature from "../utils/cloudgensig.js";
 
+import fs from "fs"
+
 dotenv.config();
 
 
 
 const generateAccessToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" }); // Short-lived
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "6h" }); // Short-lived
 };
 
 const generateRefreshToken = (id) => {
@@ -154,7 +156,7 @@ res.cookie("refreshToken", refreshToken, {
       accessToken,
       refreshToken 
     });
-
+   
   } catch (error) {
     console.error(" Login Error:", error);
     return res.status(500).json({ message: "Server Error" });
@@ -413,3 +415,58 @@ export const logoutUser = async (req, res) => {
 };
 
 
+export const Uploadavatar = async (req, res) => {
+  try {
+    console.log("Received Request to Upload Avatar");
+
+    // Check if file is received
+    if (!req.file) {
+      console.error("No file received in request.");
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    console.log("File Received:", req.file);
+
+    // Ensure file path exists
+    if (!req.file.path) {
+      console.error("File path is missing.");
+      return res.status(400).json({ success: false, message: "File path is missing" });
+    }
+
+    console.log("Uploading file to Cloudinary:", req.file.path);
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "avatars",
+      width: 300,
+      height: 300,
+      crop: "fill",
+    });
+
+    console.log("Cloudinary Upload Response:", result);
+
+    // Delete local file
+    fs.unlinkSync(req.file.path);
+
+    // Find user
+    const user = await Usermodel.findById(req.user.id);
+    if (!user) {
+      console.error("User not found.");
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    user.avatar = result.secure_url;
+    await user.save();
+
+    console.log("Avatar updated successfully for user:", user._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Avatar updated successfully",
+    });
+
+  } catch (error) {
+    console.error("Internal Server Error:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+};
