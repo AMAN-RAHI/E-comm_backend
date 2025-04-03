@@ -323,6 +323,7 @@ export const forgotPassword = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
+    console.log('the response',req.body)
     const { email,newpassword } = req.body;
 
     const user = await Usermodel.findOne({ email });
@@ -340,8 +341,9 @@ export const resetPassword = async (req, res) => {
   
 
     await user.save();
+    console.log("After Change - Hashed Password:", user.password);
 
-    res.status(200).json({ message: "Password reset successfully" });
+    res.status(200).json({success:true, message: "Password reset successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
