@@ -50,7 +50,9 @@ const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 mi
       email,
       password, 
       otp,
-      otpExpires
+      otpExpires,
+      avatar,
+      mobile
       
     });
 
@@ -81,6 +83,8 @@ const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 mi
         _id: user.id,
         name: user.name,
         email: user.email,
+        avatar:user.avatar,
+        mobile:user.mobile,
         accessToken,
       });
     } else {
@@ -153,6 +157,8 @@ res.cookie("refreshToken", refreshToken, {
       _id: user.id,
       name: user.name,
       email: user.email,
+      mobile:user.mobile,
+      avatar:user.avatar,
       accessToken,
       refreshToken 
     });
@@ -241,11 +247,8 @@ export const verifyEmail = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     console.log("User ID from Token:", req.user.id);
-    console.log("Cloudinary Config (Only in Update Route):", {
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET ? "Loaded" : "Missing",
-    });
+    console.log("Received Data:", req.body);
+   
 
     const user = await Usermodel.findById(req.user.id);
 
@@ -256,35 +259,9 @@ export const updateUserProfile = async (req, res) => {
     // Update basic fields
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
+    user.mobile = req.body.mobile || user.mobile
 
-    // Handle avatar upload
-    if (req.body.avatar) {
-      try {
-        console.log(" Attempting to upload avatar...");
-
-        if (!req.body.avatar.startsWith("data:image")) {
-          return res.status(400).json({ message: "Invalid image format. Use Base64." });
-        }
-
-        const timestamp = Math.round(new Date().getTime() / 1000);
-        const params = { timestamp, folder: "avatars" };
-        const signature = generateSignature(params);
-
-        const uploadedResponse = await cloudinary.uploader.upload(req.body.avatar, {
-          folder: "avatars",
-          transformation: [{ width: 500, height: 500, crop: "fill" }],
-          api_key: process.env.CLOUDINARY_API_KEY,
-          timestamp,
-          signature,
-        });
-
-        console.log("Avatar uploaded successfully:", uploadedResponse.secure_url);
-        user.avatar = uploadedResponse.secure_url;
-      } catch (uploadError) {
-        console.error(" Cloudinary Upload Error:", uploadError);
-        return res.status(400).json({ message: "Cloudinary upload failed", error: uploadError });
-      }
-    }
+   
 
     // Update password if provided
     if (req.body.password && req.body.password.trim() !== "") {
@@ -297,11 +274,13 @@ export const updateUserProfile = async (req, res) => {
 
     // Send response
     res.json({
+      success:true,
       _id: updatedUser.id,
       name: updatedUser.name,
       email: updatedUser.email,
-      avatar: updatedUser.avatar, 
-      token: generateToken(updatedUser.id),
+      mobile:updatedUser.mobile,
+     
+      // token: generateToken(updatedUser.id),
     });
 
   } catch (error) {
@@ -427,13 +406,9 @@ export const Uploadavatar = async (req, res) => {
 
     console.log("File Received:", req.file);
 
-    // Ensure file path exists
-    if (!req.file.path) {
-      console.error("File path is missing.");
-      return res.status(400).json({ success: false, message: "File path is missing" });
-    }
+    
 
-    console.log("Uploading file to Cloudinary:", req.file.path);
+   
 
     // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(req.file.path, {
@@ -462,6 +437,7 @@ export const Uploadavatar = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      avatar: user.avatar,
       message: "Avatar updated successfully",
     });
 
