@@ -4,7 +4,7 @@ import Usermodel from "../Models/userModels.js";
 export const AddressController= async(req,res)=>{
 try {
     const{address_line,city,mobile,pincode,country,state,status} =req.body
-    const userId =req.userId
+    const userId =req.user._id
 
     console.log('User id is here',userId)
     if(!address_line || !city || !mobile || !pincode || !country || !state){
@@ -26,7 +26,7 @@ try {
         status:validStatus,
         userId
     })
-
+    
     const savedAddress= await address.save();
    
     
@@ -36,12 +36,17 @@ try {
                 }
             })
 
+            // 4. Populate the addresses if needed
+   const userWithAddresses = await Usermodel.findById(userId).populate('address_details');
+   console.log('the value is here' ,userWithAddresses )
             return res.status(200).json({
-                data:savedAddress,
+                data:userWithAddresses,
                 message: "Address added successfully",
                 error:false,
                 success:true
             })
+
+          
 
 } catch (error) {
     

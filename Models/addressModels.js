@@ -35,7 +35,7 @@ const addressSchema = new mongoose.Schema({
 
   userId: {
     type: mongoose.Schema.ObjectId,
-    default: "",
+    ref: 'User',
   },
 }, { timestamps: true }); // Auto-adds createdAt & updatedAt fields
 
