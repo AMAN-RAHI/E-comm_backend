@@ -51,9 +51,9 @@ const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 mi
       password, 
       otp,
       otpExpires,
-      avatar,
-      mobile
-      
+     
+      //  avatar,
+      // mobile
     });
 
     // Generate tokens
@@ -80,7 +80,7 @@ const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 mi
     if (user) {
       res.status(201).json({
         success: true,
-        _id: user.id,
+        _id: user._id, // i have changed this if any error comes to frontent then we deal here
         name: user.name,
         email: user.email,
         avatar:user.avatar,

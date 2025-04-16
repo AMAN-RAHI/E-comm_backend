@@ -11,6 +11,7 @@ import categoryRouter from './Routes/categoryRoutes.js';
 import productRoutes from './Routes/productRoutes.js';
 import cartproductRouter from './Routes/cartRoutes.js'
 import MyListRouter from './Routes/myListRoutes.js';
+import addressRouter from './Routes/addressRoutes.js';
 
 const app = express();
 
@@ -46,6 +47,9 @@ app.use("/api/cart",cartproductRouter);
 
 //myList routes
 app.use('/api/myList',MyListRouter)
+
+//Address router
+app.use('/api/address',addressRouter)
 
 ConnectDb().then(() => {
   app.listen(PORT, () => {
