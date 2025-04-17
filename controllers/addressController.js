@@ -60,3 +60,22 @@ try {
     
 
 }
+
+export const getAddressByUserId = async (req, res) => {
+    const { userId } = req.params;
+  
+    try {
+        console.log("GET address hit for userId:", userId);
+
+      const address = await AddressModel.findOne({ userId });
+  
+      if (!address) {
+        return res.status(404).json({ success: false, message: "Address not found" });
+      }
+  
+      res.status(200).json({ success: true, address });
+    } catch (error) {
+      console.error("Error fetching address:", error);
+      res.status(500).json({ success: false, message: "Server Error" });
+    }
+  };

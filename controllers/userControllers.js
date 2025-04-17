@@ -18,7 +18,7 @@ const generateAccessToken = (id) => {
 };
 
 const generateRefreshToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" }); // Long-lived
+  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, { expiresIn: "17d" }); // Long-lived
 };
 
 
@@ -154,7 +154,7 @@ res.cookie("refreshToken", refreshToken, {
     // Send response with user details and token
     return res.status(200).json({
       success:true,
-      _id: user.id,
+      _id: user._id,
       name: user.name,
       email: user.email,
       mobile:user.mobile,
@@ -227,7 +227,7 @@ export const verifyEmail = async (req, res) => {
     res.status(200).json({
       success:true,
       message: "OTP verified successfully",
-      _id: user.id,
+      _id: user._id,
       name: user.name,
       email: user.email,
       verify_email: user.verify_email,
