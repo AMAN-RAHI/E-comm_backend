@@ -36,11 +36,16 @@ try {
                 }
             })
 
-            // 4. Populate the addresses if needed
+           
    const userWithAddresses = await Usermodel.findById(userId).populate('address_details');
    console.log('the value is here' ,userWithAddresses )
+
+  
+
             return res.status(200).json({
-                data:userWithAddresses,
+        address: Array.isArray(userWithAddresses.address_details)
+    ? userWithAddresses.address_details
+    : [userWithAddresses.address_details],
                 message: "Address added successfully",
                 error:false,
                 success:true
@@ -67,7 +72,7 @@ export const getAddressByUserId = async (req, res) => {
     try {
         console.log("GET address hit for userId:", userId);
 
-      const address = await AddressModel.findOne({ userId });
+      const address = await AddressModel.find({ userId });
   
       if (!address) {
         return res.status(404).json({ success: false, message: "Address not found" });
@@ -79,3 +84,43 @@ export const getAddressByUserId = async (req, res) => {
       res.status(500).json({ success: false, message: "Server Error" });
     }
   };
+
+
+export const deleteAddress =async(req,res)=>{
+    try {
+
+        const userId = req.user._id // this is how userId is stored inside it
+
+        const _id=req.params.id
+        
+         if(!_id){
+            return res.status(404).json({
+                message:"the id is not found",
+                success:false
+            })
+         }
+        
+         const deleteAddress = await AddressModel.deleteOne({_id:_id, userId:userId})
+         
+         if(!deleteAddress.deletedCount === 0){
+            return res.status(404).json({
+                message:"the Address  is not found",
+                success:false
+            })
+         }
+
+    
+         res.json({
+            message:"the Address is deleted successfully",
+            success:true,
+            data: deleteAddress
+         })
+    } catch (error) {
+        console.log('Errror deleteing address',error);
+         res.status(500).json({
+            success:false,
+            message:"Server Error"
+         })
+    }
+   
+}
