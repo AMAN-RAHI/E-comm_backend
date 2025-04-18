@@ -70,7 +70,9 @@ export async function createCategory(req, res) {
       success: true,
       message: "Category created successfully",
       category: newCategory,
+      uploadedImages: imageUrl ? [imageUrl] : [],
     });
+    
 
   } catch (error) {
     console.error("Server Error:", error);
@@ -176,4 +178,41 @@ export async function deleteCategory(req,res) {
     res.status(500).json({success:false,message: error.message})
   }
   
+}
+
+
+export async function uploadCategoryImage(req, res) {
+  try {
+    
+  
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+
+    const file = req.files[0]; 
+    console.log("File received:", file);
+
+    const result = await cloudinary.uploader.upload(file.path, {
+      folder: "categories",
+      user_filename: true,
+      unique_filename: false,
+      overwrite: false,
+    });
+
+    // Clean up local file
+    fs.unlinkSync(file.path);
+
+    return res.status(200).json({
+      success: true,
+      message: "Image uploaded successfully",
+      imageUrl: result.secure_url,
+    });
+  } catch (error) {
+    console.error("Upload Error:", error);
+    return res.status(500).json({
+      message: "Image upload failed",
+      error: error.message,
+      success: false,
+    });
+  }
 }
