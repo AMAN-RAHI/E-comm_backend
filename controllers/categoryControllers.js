@@ -14,39 +14,16 @@ cloudinary.config({
 // Create Category & Upload Image (Single API Call)
 export async function createCategory(req, res) {
   try {
-    const { name, parent_id } = req.body;
+    const { name,image,parent_id  } = req.body;
 
+    console.log("formData in postDataCategory:", req.body);
+    
     if (!name) {
       return res.status(400).json({ message: "Category name is required" });
     }
 
-    let imageUrl = "";
+    const imageUrl = image || "";
 
-    // Check if an image is uploaded
-    if (req.file) {
-      try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "categories",
-          user_filename: true,
-          unique_filename: false,
-          overwrite: false,
-        });
-
-        imageUrl = result.secure_url;
-
-        // Delete file from local storage after upload
-        fs.unlinkSync(req.file.path);
-      } catch (uploadError) {
-        console.error("Cloudinary Upload Error:", uploadError);
-        return res.status(500).json({
-          message: "Cloudinary upload failed",
-          error: uploadError.message,
-          success: false,
-        });
-      }
-    }
-
-    // Find Parent Category Name (if exists)
     let parent_category_name = "";
     if (parent_id) {
       const parentCategory = await CategoryModel.findById(parent_id);
@@ -56,7 +33,6 @@ export async function createCategory(req, res) {
       parent_category_name = parentCategory.name;
     }
 
-    // Save category in MongoDB
     const newCategory = new CategoryModel({
       name,
       parent_id: parent_id || null,
@@ -72,7 +48,6 @@ export async function createCategory(req, res) {
       category: newCategory,
       uploadedImages: imageUrl ? [imageUrl] : [],
     });
-    
 
   } catch (error) {
     console.error("Server Error:", error);
@@ -82,6 +57,7 @@ export async function createCategory(req, res) {
     });
   }
 }
+
 
 
 // create get all category controller
@@ -190,7 +166,7 @@ export async function uploadCategoryImage(req, res) {
     }
 
     const file = req.files[0]; 
-    console.log("File received:", file);
+    
 
     const result = await cloudinary.uploader.upload(file.path, {
       folder: "categories",

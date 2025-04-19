@@ -7,13 +7,10 @@ import {createCategory,getallCategory,getCategoryById,updateCategory,deleteCateg
 
 const categoryRouter= Router()
 
-categoryRouter.post("/create",  createCategory);
+categoryRouter.post("/create",createCategory);
 
-categoryRouter.post("/upload", upload.array("images", 1), (req, res, next) => {
-    console.log("Request body:", req.body);  // Log any other data sent in the body
-    console.log("Uploaded files:", req.files);  // Log the uploaded files to check if they are received
-    next();  // Proceed to the next handler (uploadCategoryImage)
-  }, uploadCategoryImage);
+
+categoryRouter.post("/upload", upload.array("images", 1), uploadCategoryImage);
 
 // api/category/gettall
 categoryRouter.get("/", getallCategory);
