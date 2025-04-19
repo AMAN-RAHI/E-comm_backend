@@ -113,6 +113,8 @@ export async function getCategoryById(req,res) {
 // update categories
 export async function updateCategory(req,res) {
   try {
+    console.log("Incoming ID:", req.params.id);
+    console.log("Incoming Data:", req.body); // 👈 LOG HERE
     const updatecategory= await CategoryModel.findByIdAndUpdate(
       req.params.id,
       {$set:req.body},
