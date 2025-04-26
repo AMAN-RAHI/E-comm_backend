@@ -71,7 +71,7 @@ thirdsubCatid:{
 category:{
     type:mongoose.Schema.Types.ObjectId,
     ref:'Category',
-    required:true
+    
 },
 countInstock:{
     type:Number,

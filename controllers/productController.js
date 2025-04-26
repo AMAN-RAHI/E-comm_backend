@@ -13,25 +13,28 @@ cloudinary.config({
 // Upload Image to Cloudinary 
 export async function uploadProductImage(req, res) {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
     }
 
-    // Upload image to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "products",
-      user_filename: true,
-      unique_filename: false,
-      overwrite: false,
-    });
+    const urls = [];
 
-    // Delete file from local storage
-    fs.unlinkSync(req.file.path);
+    for (const file of req.files) {
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "products",
+        user_filename: true,
+        unique_filename: false,
+        overwrite: false,
+      });
+
+      urls.push(result.secure_url);
+      fs.unlinkSync(file.path); // clean up local file
+    }
 
     return res.status(200).json({
       success: true,
-      message: "Image uploaded successfully",
-      imageUrl: result.secure_url, // Image URL is returned
+      message: "Images uploaded successfully",
+      imageUrls: urls,
     });
   } catch (error) {
     return res.status(500).json({
@@ -41,6 +44,7 @@ export async function uploadProductImage(req, res) {
     });
   }
 }
+
 
   
   //create product

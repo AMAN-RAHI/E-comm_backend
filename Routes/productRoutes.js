@@ -6,7 +6,7 @@ import { createProduct, uploadProductImage,getallProducts,getProductsbyid, updat
 
 const productRoutes=Router();
 
-productRoutes.post("/upload",  upload.single("image",5),protect, uploadProductImage);
+productRoutes.post("/upload",upload.array("images", 5),protect, uploadProductImage);
 productRoutes.post("/create",protect,createProduct)
 
 // no authentication routes
