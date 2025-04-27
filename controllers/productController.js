@@ -2,6 +2,7 @@ import ProductModel from "../Models/productModels.js";
 import CategoryModel from "../Models/categoryModels.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { error } from "console";
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -227,4 +228,50 @@ return res.status(200).json({
       });
     }
     
+   }
+
+   //delete products in bulk
+   export async  function BulkdeleteProduct(req,res){
+    const {ids} =req.body;
+
+    if(!ids || !Array.isArray(ids) || ids.length === 0){
+      return res.status(400).json({
+        error:true,
+        success:false,
+        message:'Invalid Input'
+      })
+    }
+    for(let i=0; i<ids.length; i++){
+     const product = await ProductModel.findById(ids[i]);
+
+     const images = product.images;
+     let img=""
+
+     for(img of images){
+      const imgUrl=img;
+      const urlArr= imgUrl.split('/')
+      const image=urlArr[urlArr.length-1];
+
+      const imageName=image.split(".")[0];
+
+      if(imageName){
+        cloudinary.uploader.destroy(imageName,(error,result))
+      }
+     }
+    }
+
+    try {
+     await ProductModel.deleteMany({_id:{$in:ids}});
+     return res.status(200).json({
+      success:true,
+      error:false,
+      message:'Product deleted successfully'
+     })
+    } catch (error) {
+      return res.status(500).json({
+        error:true,
+        success:false,
+        message:error.message||error
+      })
+    }
    }

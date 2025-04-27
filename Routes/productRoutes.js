@@ -2,7 +2,7 @@ import {Router} from  'express'
 
 import { protect } from "../middleware/authMiddleware.js";
 import upload from  "../middleware/multer.js"
-import { createProduct, uploadProductImage,getallProducts,getProductsbyid, updateProducts,deleteProduct} from '../controllers/productController.js';
+import { createProduct, uploadProductImage,getallProducts,getProductsbyid, updateProducts,deleteProduct, BulkdeleteProduct} from '../controllers/productController.js';
 
 const productRoutes=Router();
 
@@ -17,4 +17,6 @@ productRoutes.get('/:id',getProductsbyid) // get  by id
 productRoutes.put('/:id',updateProducts)
 
 productRoutes.delete('/:id',deleteProduct)
+
+productRoutes.delete('/deleteMultiple',BulkdeleteProduct)
 export default productRoutes
