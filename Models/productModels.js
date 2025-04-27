@@ -89,6 +89,10 @@ discount:{
     type:Number,
     required:true
 },
+sale:{
+    type:Number,
+    default:0
+},
 productRam:[{
     type:String,
     default:null

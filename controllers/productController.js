@@ -1,4 +1,5 @@
 import ProductModel from "../Models/productModels.js";
+import CategoryModel from "../Models/categoryModels.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
@@ -54,8 +55,17 @@ export async function uploadProductImage(req, res) {
             name, description,images, // Array of image URLs
             brand,price,oldPrice,catId,subcatId,thirdsubCatid,
             countInstock,discount,productRam,size,
-            productWeight,location,category
+            productWeight,location,category,      
           } = req.body;
+
+
+          // Fetch Category Name
+    const cat = await CategoryModel.findById(catId);
+    const catName = cat ? cat.name : '';
+
+    //Fetch SubCategory Name
+    const subcat = await CategoryModel.findById(subcatId);
+    const subcatName = subcat ? subcat.name : '';
 
           // Create new product
     const newProduct = new ProductModel({
@@ -74,7 +84,9 @@ export async function uploadProductImage(req, res) {
         size,
         productWeight,
         location,
-        category
+        category,
+        catName,      
+        subcatName, 
         
 
       });
@@ -107,7 +119,8 @@ return res.status(200).json({
         message:'the product is not  found'
       })
 
-      res.status(200).json({success:true,message:"product is found successfully",products})
+      res.status(200).json({success:true,message:"product is found successfully",
+        rootProducts:products})
 
       
     } catch (error) {
@@ -192,7 +205,7 @@ return res.status(200).json({
       if (product.images?.length > 0) {
         const deletePromises = product.images.map((imageUrl) => {
           const publicId = imageUrl.split("/").pop().split(".")[0];
-          return cloudinary.uploader.destroy(publicId); // ✅ Use cloudinary.uploader.destroy()
+          return cloudinary.uploader.destroy(publicId); 
         });
       
         await Promise.all(deletePromises); // Deletes all images in parallel
