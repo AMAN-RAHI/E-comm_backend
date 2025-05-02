@@ -12,11 +12,14 @@ productRoutes.post("/create",protect,createProduct)
 // no authentication routes
 productRoutes.get('/',getallProducts) // get all products
 
+//delete in bulk
+productRoutes.delete('/deleteMultiple',BulkdeleteProduct)
+
 productRoutes.get('/:id',getProductsbyid) // get  by id 
 
 productRoutes.put('/:id',updateProducts)
 
 productRoutes.delete('/:id',deleteProduct)
 
-productRoutes.delete('/deleteMultiple',BulkdeleteProduct)
+
 export default productRoutes
