@@ -56,7 +56,7 @@ export async function uploadProductImage(req, res) {
             name, description,images, // Array of image URLs
             brand,price,oldPrice,catId,subcatId,thirdsubCatid,
             countInstock,discount,productRam,size,
-            productWeight,location,category,      
+            productWeight,location,category, rating,     
           } = req.body;
 
 
@@ -88,6 +88,7 @@ export async function uploadProductImage(req, res) {
         category,
         catName,      
         subcatName, 
+        rating
         
 
       });
