@@ -76,7 +76,7 @@ try {
     const rootCategories=[]
   categories.forEach(cat=>{
     if(cat.parent_id){
-      categoryMap[cat.parent_id].children.push(categoryMap[cat.id])
+      categoryMap[cat.parent_id].children.push(categoryMap[cat._id])
 
     }
     else{
