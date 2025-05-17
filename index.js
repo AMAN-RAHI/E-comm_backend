@@ -12,7 +12,7 @@ import productRoutes from './Routes/productRoutes.js';
 import cartproductRouter from './Routes/cartRoutes.js'
 import MyListRouter from './Routes/myListRoutes.js';
 import addressRouter from './Routes/addressRoutes.js';
-
+import SliderRoutes from './Routes/sliderRoutes.js';
 const app = express();
 
 //middlewares
@@ -50,6 +50,9 @@ app.use('/api/myList',MyListRouter)
 
 //Address router
 app.use('/api/address',addressRouter)
+
+//Address router
+app.use('/api/homeslider',SliderRoutes)
 
 ConnectDb().then(() => {
   app.listen(PORT, () => {
