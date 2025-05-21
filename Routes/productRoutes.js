@@ -2,11 +2,13 @@ import {Router} from  'express'
 
 import { protect } from "../middleware/authMiddleware.js";
 import upload from  "../middleware/multer.js"
-import { createProduct, uploadProductImage,getallProducts,getProductsbyid, updateProducts,deleteProduct, BulkdeleteProduct} from '../controllers/productController.js';
+import { createProduct, uploadProductImage,getallProducts,getProductsbyid, 
+    updateProducts,deleteProduct, BulkdeleteProduct,uploadBannerImage} from '../controllers/productController.js';
 
 const productRoutes=Router();
 
 productRoutes.post("/upload",upload.array("images", 5),protect, uploadProductImage);
+productRoutes.post("/uploadbannerImage",upload.array("images", 5),protect, uploadBannerImage);
 productRoutes.post("/create",protect,createProduct)
 
 // no authentication routes

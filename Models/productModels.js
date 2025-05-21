@@ -103,11 +103,24 @@ size:[{
     default:null
 }],
 
+bannerTitlename:{
+        type:String,
+        required:true,
+    },
+bannerimages:[{
+    type:String,
+    required:true
+}],
+
 productWeight:[{
     type:String,
     default:null
 }],
 
+IsDisplaybanner:{
+    type:Boolean,
+    default:false
+},
 location:[{
     value:{
         type:String

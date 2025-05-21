@@ -47,7 +47,42 @@ export async function uploadProductImage(req, res) {
   }
 }
 
+  
 
+// Upload BannerImage to Cloudinary 
+export async function uploadBannerImage(req, res) {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    }
+   const bannerImage=[];
+   
+
+    for (const file of req.files) {
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "products/banner",
+        user_filename: true,
+        unique_filename: false,
+        overwrite: false,
+      });
+
+     bannerImage.push(result.secure_url);
+      fs.unlinkSync(file.path); // clean up local file
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "BannerImages uploaded successfully",
+      imageUrls:bannerImage,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Image upload failed",
+      error: error.message,
+    });
+  }
+}
   
   //create product
   export async function createProduct(req,res) {
@@ -56,7 +91,8 @@ export async function uploadProductImage(req, res) {
             name, description,images, // Array of image URLs
             brand,price,oldPrice,catId,subcatId,thirdsubCatid,
             countInstock,discount,productRam,size,
-            productWeight,location,category, rating,     
+            productWeight,location,category, rating,bannerimages,bannerTitlename,
+           IsDisplaybanner
           } = req.body;
 
 
@@ -73,6 +109,7 @@ export async function uploadProductImage(req, res) {
         name,
         description,
         images, //Stores an array of image URLs
+        bannerimages, // for banner images 
         brand,
         price,
         oldPrice,
@@ -88,7 +125,9 @@ export async function uploadProductImage(req, res) {
         category,
         catName,      
         subcatName, 
-        rating
+        rating,
+        bannerTitlename,
+        IsDisplaybanner
         
 
       });
@@ -277,3 +316,6 @@ return res.status(200).json({
       })
     }
    }
+
+
+ 
