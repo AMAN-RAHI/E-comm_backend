@@ -1,7 +1,7 @@
 import express from "express";
 import {
   registerUser, loginUser, getUserProfile,updateUserProfile,forgotPassword,resetPassword,logoutUser,
-  verifyEmail,verifyforgotpasswordOtp,Uploadavatar} 
+  verifyEmail,verifyforgotpasswordOtp,Uploadavatar,addReview,getReviews} 
   from "../controllers/userControllers.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -29,5 +29,10 @@ router.get("/profile", protect, getUserProfile); // Get user profile
 router.put("/profile", protect, updateUserProfile); // Update user profile
 
 // private route need to be checked by the authentication middleware here it is protect 
+
+
+router.post("/addReviews",protect,addReview); // review routes
+router.get("/getReviews", getReviews); 
+
 
 export default router;

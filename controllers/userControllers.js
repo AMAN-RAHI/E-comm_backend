@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import sendEmail from "../config/sendEmail.js";
 import crypto from "crypto";
 import cloudinary from "../utils/cloudinary.js";
+import ReviewModel from "../Models/ReviewModel.js";
 import generateSignature from "../utils/cloudgensig.js";
 
 import fs from "fs"
@@ -174,15 +175,14 @@ res.cookie("refreshToken", refreshToken, {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await Usermodel.findById(req.user.id).select("-password"); // Exclude password
-
+    const user = await Usermodel.findById(req.user.id).select("-password");
     if (user) {
-      res.json(user);
+      res.status(200).json({ success: true, user });
     } else {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ success: false, message: "User not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
@@ -445,6 +445,61 @@ export const Uploadavatar = async (req, res) => {
 
   } catch (error) {
     console.error("Internal Server Error:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
+
+// review controller 
+
+export const addReview = async(req,res)=>{
+try {
+  const {Username,image,rating,comment, userId,productId} = req.body
+
+  const userReview = new ReviewModel({
+    Username:Username,
+    image:image,
+    rating:rating,
+    comment:comment,
+    userId:userId,
+    productId:productId
+})
+
+await userReview.save();
+
+ return res.status(200).json({
+      success: true,
+      message: "Review added successfully",
+    });
+
+} catch (error) {
+    console.error("Internal Server Error:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+}
+
+
+//get Review 
+export const getReviews= async (req, res) => {
+  try {
+    const productId = req.query.productId;
+
+
+    const reviews = await ReviewModel.find({ productId:productId });
+
+    if(!reviews){
+      return res.status(400).json({
+        success:false,
+        message:'Reviews not found'
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      reviews,
+    });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
