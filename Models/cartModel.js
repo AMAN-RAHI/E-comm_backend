@@ -36,7 +36,9 @@ const cartItemSchema= new mongoose.Schema({
         required:true
  },
 
- price:{
+ 
+
+ oldPrice:{
         type:Number,
         required:true
  },

@@ -8,7 +8,7 @@ export const addItemtocart = async (req,res) => {
         
        
 const {
-  productTitle,image,rating,price,quantity,SubTotal,productId,countInstock,userId
+  productTitle,image,rating,price,quantity,SubTotal,productId,countInstock,userId,oldPrice
 } = req.body
 
         if(!productId) return res.status(404).json({
@@ -43,6 +43,7 @@ const {
       image:image,
       rating:rating,
       price:price,
+      oldPrice:oldPrice,
       quantity,
       SubTotal:SubTotal,
       productId:productId,
