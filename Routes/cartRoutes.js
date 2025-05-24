@@ -8,7 +8,7 @@ const cartproductRouter =Router()
 
 cartproductRouter.post('/add',protect,addItemtocart)
 
-cartproductRouter.get('/:userId',getcartItems)
+cartproductRouter.get('/get',protect,getcartItems)
 
 //update the cart route
 cartproductRouter.put('/:cartItemId',protect, updateCart)

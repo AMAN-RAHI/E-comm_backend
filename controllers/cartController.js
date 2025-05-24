@@ -1,12 +1,15 @@
 import Usermodel from "../Models/userModels.js";
 import ProductModel from "../Models/productModels.js";
-import cartproductModel from "../Models/cartModels.js";
+
+import cartItemtModel from "../Models/cartModel.js";
 
 export const addItemtocart = async (req,res) => {
     try {
         
        
-        const {productId,userId,quantity} = req.body
+const {
+  productTitle,image,rating,price,quantity,SubTotal,productId,countInstock,userId
+} = req.body
 
         if(!productId) return res.status(404).json({
             success:false,
@@ -14,32 +17,51 @@ export const addItemtocart = async (req,res) => {
             message:'provide productId'
         })
 
-        // check wether the item exists if it exists lets plus its quantity
-        let existingItem = await cartproductModel.findOne({productId,userId}) 
+         if(!userId) return res.status(404).json({
+            success:false,
+            error:true,
+            message:'provide productId'
+        })
 
-        if(existingItem){
-            existingItem.quantity += quantity;
-            await existingItem.save();
-            return res.status(200).json({
-                message : 'cart updated',cartItem:existingItem
-            })
-        }
+        // check wether the item exists if it exists lets plus its quantity
+        let existingItem = await cartItemtModel.findOne({productId,userId}) 
+
+        if (existingItem) {
+  existingItem.quantity += quantity;
+  existingItem.SubTotal = existingItem.quantity * existingItem.price;
+  await existingItem.save();
+  return res.status(200).json({
+    success: true,
+    message: 'Cart updated',
+    cartItem: existingItem,
+  });
+}
             // if the itemis not there in cart then we need to add it to cart 
 
-        const newCartitem=new cartproductModel({productId,userId,quantity})
-        await  newCartitem.save();
+        const newCartItem = new cartItemtModel({
+      productTitle:productTitle,
+      image:image,
+      rating:rating,
+      price:price,
+      quantity,
+      SubTotal:SubTotal,
+      productId:productId,
+      countInstock:countInstock,
+      userId,
+    });
+        await newCartItem.save();
 
-        // also update the shopping cart field from user model
-        await Usermodel.findByIdAndUpdate(userId,{
-            $push :{
-                shopping_cart : newCartitem._id
-            }
-        })
+        // // also update the shopping cart field from user model
+        // await Usermodel.findByIdAndUpdate(userId,{
+        //     $push :{
+        //         shopping_cart : newCartitem._id
+        //     }
+        // })
     
         
 
         res.status(200).json({success:true,
-            message:'the product is added to cart',cartItem:newCartitem
+            message:'the product is added to cart',cartItem:newCartItem
         })
 
         
@@ -53,25 +75,23 @@ export const addItemtocart = async (req,res) => {
 }
 
 //get cart items
-export const getcartItems =async (req,res) => 
-    {
-    try {
-        const {userId}= req.params;
-        const cartItems =await cartproductModel.find({
-            userId:userId
-        }).populate('productId')
+export const getcartItems = async (req, res) => {
+  try {
+    const userId = req.user._id; // Assuming JWT middleware sets req.user
 
-        if(!cartItems.length) return res.status(404).json({success:false,message:'the item is not found'})
+    const cartItems = await cartItemtModel.find({ userId }).populate('productId');
 
-            return res.status(200).json({success:true, cartItems})
-    } catch (error) {
-        console.log('server error', error)
-        return res.status(500).json({
-            message:error.message|| 'Internal server error',
-            success : false
-        })
-    }
-}
+    return res.status(200).json({ success: true, cartItems: cartItems || [] });
+    
+  } catch (error) {
+    console.log('server error', error);
+    return res.status(500).json({
+      message: error.message || 'Internal server error',
+      success: false
+    });
+  }
+};
+
 
 //update the cart 
 export const updateCart=async (req,res) => {
@@ -85,7 +105,7 @@ export const updateCart=async (req,res) => {
                 message: "Please provide a valid quantity"
             });
         }
-        const updatedCartItem = await cartproductModel.findByIdAndUpdate(
+        const updatedCartItem = await cartItemtModel.findByIdAndUpdate(
             cartItemId,
             { quantity },
             { new: true }
@@ -115,7 +135,7 @@ export const removecartItem = async (req,res) => {
     try {
         const { cartItemId, userId } = req.params; // can remove refernce from both user =model and cart model
 
-        const removeItem = await cartproductModel.findByIdAndDelete(cartItemId)
+        const removeItem = await cartItemtModel.findByIdAndDelete(cartItemId)
         if (!removeItem) {
             return res.status(404).json({
                 success: false,
@@ -123,10 +143,10 @@ export const removecartItem = async (req,res) => {
             });
         }
 
-        // lets also remove from the shopping cart referenced form the user
-        await Usermodel.findByIdAndUpdate(userId, {
-            $pull: { shopping_cart: cartItemId }
-        });
+        // // lets also remove from the shopping cart referenced form the user
+        // await Usermodel.findByIdAndUpdate(userId, {
+        //     $pull: { shopping_cart: cartItemId }
+        // });
 
         res.status(200).json({
             success: true,
