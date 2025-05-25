@@ -124,3 +124,55 @@ export const deleteAddress =async(req,res)=>{
     }
    
 }
+
+export const updateAddress = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const { address_line, city, mobile, pincode, country, state, status } = req.body;
+
+    if (!address_line || !city || !mobile || !pincode || !country || !state) {
+      return res.status(400).json({
+        message: "All fields are required",
+        success: false,
+        error: true,
+      });
+    }
+
+    const validStatus = (status === "true" || status === true) ? true : false;
+
+    const updatedAddress = await AddressModel.findOneAndUpdate(
+      { _id: id, userId },
+      {
+        address_line,
+        city,
+        mobile,
+        pincode,
+        country,
+        state,
+        status: validStatus,
+      },
+      { new: true }
+    );
+
+    if (!updatedAddress) {
+      return res.status(404).json({
+        message: "Address not found or unauthorized",
+        success: false,
+      });
+    }
+
+    res.status(200).json({
+      message: "Address updated successfully",
+      success: true,
+      address: updatedAddress,
+    });
+  } catch (error) {
+    console.log("Error updating address:", error);
+    res.status(500).json({
+      message: "Server error",
+      success: false,
+      error: error.message,
+    });
+  }
+};

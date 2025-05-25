@@ -62,7 +62,7 @@ export const getmyListitems = async(req,res)=>{
         return res.status(200).json({
             success:true,
             message:'myList items',
-            items
+             myList: items, 
 
         })
     } catch (error) {
@@ -90,7 +90,7 @@ export const deletemyListitems = async(req,res)=>{
       return res.status(200).json({
         success:true,
         message:"the item is deleted successfully",
-        item
+       myList: item, 
       })
     }
     catch(error){
