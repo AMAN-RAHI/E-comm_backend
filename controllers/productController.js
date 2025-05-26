@@ -321,5 +321,59 @@ return res.status(200).json({
     }
    }
 
+   // Get only latest products
+export async function getLatestProducts(req, res) {
+  try {
+    const latestProducts = await ProductModel.find({ isLatest: true });
+
+    if (latestProducts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No latest products found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Latest products fetched successfully",
+      latestProducts,
+    });
+
+  } catch (error) {
+    console.error("Server Error:", error);
+    return res.status(500).json({
+      message: error.message || "Internal Server Error",
+      success: false,
+    });
+  }
+}
+
+
+
+export async function getFeaturedProducts(req, res) {
+  try {
+    const featuredProducts = await ProductModel.find({ isFeatured: true });
+
+    if (featuredProducts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No featured products found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Featured products fetched successfully",
+      featuredProducts,
+    });
+
+  } catch (error) {
+    console.error("Server Error:", error);
+    return res.status(500).json({
+      message: error.message || "Internal Server Error",
+      success: false,
+    });
+  }
+}
 
  
