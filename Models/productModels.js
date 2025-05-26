@@ -85,6 +85,12 @@ isFeatured:{
     type:Boolean,
     default:false
 },
+
+isLatest: {
+  type: Boolean,
+  default: false,
+},
+
 discount:{
     type:Number,
     required:true

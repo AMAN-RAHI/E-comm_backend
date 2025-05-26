@@ -92,7 +92,9 @@ export async function uploadBannerImage(req, res) {
             brand,price,oldPrice,catId,subcatId,thirdsubCatid,
             countInstock,discount,productRam,size,
             productWeight,location,category, rating,bannerimages,bannerTitlename,
-           IsDisplaybanner
+           IsDisplaybanner,
+            isFeatured, 
+  isLatest  
           } = req.body;
 
 
@@ -127,7 +129,9 @@ export async function uploadBannerImage(req, res) {
         subcatName, 
         rating,
         bannerTitlename,
-        IsDisplaybanner
+        IsDisplaybanner,
+         isFeatured: isFeatured === 'true' || isFeatured === true,   
+         isLatest: isLatest === 'true' || isLatest === true  
         
 
       });
