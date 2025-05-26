@@ -13,6 +13,7 @@ import cartproductRouter from './Routes/cartRoutes.js'
 import MyListRouter from './Routes/myListRoutes.js';
 import addressRouter from './Routes/addressRoutes.js';
 import SliderRoutes from './Routes/sliderRoutes.js';
+import OrderRouter from './Routes/orderRoutes.js';
 const app = express();
 
 //middlewares
@@ -53,6 +54,9 @@ app.use('/api/address',addressRouter)
 
 //Address router
 app.use('/api/homeslider',SliderRoutes)
+
+//order routes
+app.use('/api/orders',OrderRouter)
 
 ConnectDb().then(() => {
   app.listen(PORT, () => {

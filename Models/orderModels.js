@@ -20,6 +20,7 @@ const orderSchema = new mongoose.Schema({
     name: String,
     price: Number,
     quantity: Number,
+    image: String,
   }],
   paymentId: {
     type: String, // Stores payment transaction ID (from Stripe, Razorpay, etc.)

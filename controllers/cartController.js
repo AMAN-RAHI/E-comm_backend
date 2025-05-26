@@ -161,3 +161,23 @@ export const removecartItem = async (req,res) => {
         });
     }
 }
+
+// Clear all cart items for a user
+export const clearCartItems = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const result = await cartItemtModel.deleteMany({ userId });
+
+    res.status(200).json({
+      success: true,
+      message: `Cleared ${result.deletedCount} items from cart`,
+    });
+  } catch (error) {
+    console.error("Server error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};
