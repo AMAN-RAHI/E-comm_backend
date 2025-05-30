@@ -377,3 +377,49 @@ export async function getFeaturedProducts(req, res) {
 }
 
  
+// Search Products by keyword (name, brand, description, catName, subcatName, thirdsubCatName)
+export async function searchProducts(req, res) {
+  try {
+    const { query } = req.query;
+
+    if (!query || query.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required",
+      });
+    }
+
+    const regex = new RegExp(query, "i"); // case-insensitive regex
+
+    const products = await ProductModel.find({
+      $or: [
+        { name: regex },
+        { brand: regex },
+        { description: regex }, 
+        { catName: regex },
+        { subcatName: regex },
+        
+      ],
+    });
+
+    if (products.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No matching products found",
+        products: [],
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Matching products found",
+      products,
+    });
+  } catch (error) {
+    console.error("Search Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error",
+    });
+  }
+}

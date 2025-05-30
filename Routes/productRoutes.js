@@ -3,7 +3,8 @@ import {Router} from  'express'
 import { protect } from "../middleware/authMiddleware.js";
 import upload from  "../middleware/multer.js"
 import { createProduct, uploadProductImage,getallProducts,getProductsbyid, 
-    updateProducts,deleteProduct, BulkdeleteProduct,uploadBannerImage,getLatestProducts,getFeaturedProducts} from '../controllers/productController.js';
+    updateProducts,deleteProduct, BulkdeleteProduct,uploadBannerImage,
+    getLatestProducts,getFeaturedProducts,searchProducts} from '../controllers/productController.js';
 
 const productRoutes=Router();
 
@@ -22,6 +23,9 @@ productRoutes.get('/',getallProducts) // get all products
 
 //delete in bulk
 productRoutes.delete('/deleteMultiple',BulkdeleteProduct)
+
+//this is search route
+productRoutes.get('/search', searchProducts);
 
 productRoutes.get('/:id',getProductsbyid) // get  by id 
 
